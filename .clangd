@@ -1,13 +1,14 @@
-CompileFlags:
-  Add: 
-    - --cuda-gpu-arch=sm_86
-    - -Wno-drv_omp_offload_target_missingbcruntime  # Bug: Can't suppress this warning for clangd
-  Remove:
-    - -ccbin
-    - -forward-unknown-to-host-compiler
-    - -rdc=true
-    - -gencode
-    - --generate-code*
+# CompileFlags:
+#   Add: 
+#     - -std=c++23
+#     - --cuda-gpu-arch=sm_86
+#     - -Wno-drv_omp_offload_target_missingbcruntime  # Bug: Can't suppress this warning for clangd
+#   Remove:
+#     - -ccbin
+#     - -forward-unknown-to-host-compiler
+#     - -rdc=true
+#     - -gencode
+#     - --generate-code*
 
 Diagnostics:
   UnusedIncludes: None

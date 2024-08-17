@@ -1,5 +1,6 @@
 #include <cublas_v2.h>
 #include <cuda_runtime.h>
+#include <library_types.h>
 
 #include "playground/matmul.hpp"
 #include "playground/static.hpp"

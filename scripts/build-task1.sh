@@ -1,8 +1,8 @@
 #!/bin/bash
-export CC="/usr/bin/gcc"
-export CXX="/usr/bin/g++"
-export CUDA_CC="/usr/bin/gcc"
-export CUDA_HOME="/usr/local/cuda-12.1"
+export CC="/usr/bin/gcc-11"
+export CXX="/usr/bin/g++-11"
+export CUDA_CC="/usr/bin/gcc-11"
+export CUDA_HOME="/usr/local/cuda"
 
 PROJ_HOME=$(pwd)
 TaskNo="1"
@@ -65,7 +65,7 @@ fi
 
 cd $PROJ_HOME/build
 cmake ..  \
-    -G "Ninja" \
+    -G "Ninja" -DCUDA_CC=$CUDA_CC -DCUDA_HOME=$CUDA_HOME \
     -DTASK_NO=$TaskNo \
     -DTARGET_BIN_OUTPUT_DIR=$Prefix \
     -DCMAKE_BUILD_TYPE=$BuildType \
