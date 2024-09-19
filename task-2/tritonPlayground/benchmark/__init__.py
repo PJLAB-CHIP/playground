@@ -1,0 +1,1 @@
+from .benchmark import BENCHMARK_REGISTRY
