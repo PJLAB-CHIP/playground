@@ -21,8 +21,4 @@
         "--pch-storage=memory",
         "--function-arg-placeholders=false",
     ],
-    "black-formatter.args": [
-        "--line-length",
-        "80"
-    ],
 }

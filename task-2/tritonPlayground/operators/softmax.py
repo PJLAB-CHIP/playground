@@ -2,7 +2,7 @@ import torch
 import triton
 from triton.runtime import driver
 
-from tritonPlayground.kernels.official.fused_softmaxl import (
+from tritonPlayground.kernels.official.softmax import (
     softmax_kernel,
     is_hip,
     is_cdna,
@@ -19,7 +19,29 @@ target = triton.runtime.driver.active.get_current_target()
 kernels = {}
 
 
-def softmaxOp(x: torch.Tensor):
+def naive_softmax(x: torch.Tensor):
+    """Compute row-wise softmax of X using native pytorch
+
+    We subtract the maximum element in order to avoid overflows. Softmax is invariant to
+    this shift.
+
+    Softmax(x[i]) = exp(x[i]) / sum[j:1->n](exp(x[j]))
+    """
+    # read MN elements ; write M elements
+    x_max = x.max(dim=1)[0]  # (M,) -> [DRAM]; Max of each row
+    # read MN + M elements ; write MN elements
+    z = x - x_max[:, None]  # (M, N) -> [DRAM]
+    # read MN elements ; write MN elements
+    numerator = torch.exp(z)  # (M, N) -> [DRAM]
+    # read MN elements ; write M elements
+    denominator = numerator.sum(dim=1)  # (M,) -> [DRAM]
+    # read MN + M elements ; write MN elements
+    ret = numerator / denominator[:, None]  # (M, N) -> [DRAM]
+    # in total: read 5MN + 2M elements ; wrote 3MN + 2M elements
+    return ret
+
+
+def fused_softmax_op(x: torch.Tensor):
     n_rows, n_cols = x.shape
     # The block size of each loop iteration is the smallest power of two greater than the number of columns in `x`
     BLOCK_SIZE = triton.next_power_of_2(n_cols)
@@ -70,9 +92,7 @@ def softmaxOp(x: torch.Tensor):
             # execute on a CU (multi-processor)  in parallel.
             MAX_NUM_THREADS = properties["max_threads_per_sm"]
             max_num_waves = MAX_NUM_THREADS // WARP_SIZE
-            occupancy = (
-                min(NUM_GPRS // WARP_SIZE // n_regs, max_num_waves) // num_warps
-            )
+            occupancy = min(NUM_GPRS // WARP_SIZE // n_regs, max_num_waves) // num_warps
         else:
             occupancy = NUM_REGS // (n_regs * WARP_SIZE * num_warps)
         occupancy = min(occupancy, SIZE_SMEM // size_smem)

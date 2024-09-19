@@ -2,7 +2,7 @@ import torch
 import triton
 from argparse import ArgumentParser
 
-from tritonPlayground.operators import addOp, softmaxOp, matmulOp
+from tritonPlayground.operators import add_op, fused_softmax_op, matmul_op
 from tritonPlayground.utils.registry import Registry
 from tritonPlayground.utils.device import *
 
@@ -30,7 +30,7 @@ def benchmarkAdd(size, provider):
     if provider == 'torch':
         ms, min_ms, max_ms = triton.testing.do_bench(lambda: x + y, quantiles=quantiles)
     if provider == 'triton':
-        ms, min_ms, max_ms = triton.testing.do_bench(lambda: addOp(x, y), quantiles=quantiles)
+        ms, min_ms, max_ms = triton.testing.do_bench(lambda: add_op(x, y), quantiles=quantiles)
     gbps = lambda ms: 3 * x.numel() * x.element_size() / ms * 1e-6
     return gbps(ms), gbps(max_ms), gbps(min_ms)
 
@@ -57,7 +57,7 @@ def benchmarkSoftmax(M, N, provider):
     if provider == 'torch':
         ms = triton.testing.do_bench(lambda: torch.softmax(x, axis=-1))
     if provider == 'triton':
-        ms = triton.testing.do_bench(lambda: softmaxOp(x))
+        ms = triton.testing.do_bench(lambda: fused_softmax_op(x))
     gbps = lambda ms: 2 * x.nelement() * x.element_size() * 1e-9 / (ms * 1e-3)
     return gbps(ms)
 
@@ -97,6 +97,6 @@ def benchmarkMatmul(M, N, K, provider, fp8_inputs):
     if provider == ref_lib.lower():
         ms, min_ms, max_ms = triton.testing.do_bench(lambda: torch.matmul(a, b), quantiles=quantiles)
     if provider == 'triton':
-        ms, min_ms, max_ms = triton.testing.do_bench(lambda: matmulOp(a, b), quantiles=quantiles)
+        ms, min_ms, max_ms = triton.testing.do_bench(lambda: matmul_op(a, b), quantiles=quantiles)
     perf = lambda ms: 2 * M * N * K * 1e-12 / (ms * 1e-3)
     return perf(ms), perf(max_ms), perf(min_ms)

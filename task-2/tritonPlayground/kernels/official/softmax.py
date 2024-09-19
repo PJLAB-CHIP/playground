@@ -10,28 +10,6 @@ import triton.language as tl
 from tritonPlayground.utils.device import *
 
 
-def naive_softmax(x: torch.Tensor):
-    """Compute row-wise softmax of X using native pytorch
-
-    We subtract the maximum element in order to avoid overflows. Softmax is invariant to
-    this shift.
-
-    Softmax(x[i]) = exp(x[i]) / sum[j:1->n](exp(x[j]))
-    """
-    # read MN elements ; write M elements
-    x_max = x.max(dim=1)[0]  # (M,) -> [DRAM]; Max of each row
-    # read MN + M elements ; write MN elements
-    z = x - x_max[:, None]  # (M, N) -> [DRAM]
-    # read MN elements ; write MN elements
-    numerator = torch.exp(z)  # (M, N) -> [DRAM]
-    # read MN elements ; write M elements
-    denominator = numerator.sum(dim=1)  # (M,) -> [DRAM]
-    # read MN + M elements ; write MN elements
-    ret = numerator / denominator[:, None]  # (M, N) -> [DRAM]
-    # in total: read 5MN + 2M elements ; wrote 3MN + 2M elements
-    return ret
-
-
 @triton.jit
 def softmax_kernel(
     output_ptr,

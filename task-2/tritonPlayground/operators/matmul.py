@@ -3,7 +3,7 @@ import triton
 from tritonPlayground.kernels.official.matmul import matmul_kernel
 
 
-def matmulOp(a, b, activation=""):
+def matmul_op(a, b, activation=""):
     # Check constraints.
     assert a.shape[1] == b.shape[0], "Incompatible dimensions"
     assert a.is_contiguous(), "Matrix A must be contiguous"

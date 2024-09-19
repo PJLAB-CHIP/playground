@@ -5,7 +5,7 @@ from triton.runtime import driver
 from tritonPlayground.kernels.official.add import add_kernel
 
 
-def addOp(x: torch.Tensor, y: torch.Tensor):
+def add_op(x: torch.Tensor, y: torch.Tensor):
     # We need to preallocate the output.
     output = torch.empty_like(x)
     assert x.is_cuda and y.is_cuda and output.is_cuda
