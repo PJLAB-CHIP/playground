@@ -7,6 +7,10 @@ CompileFlags:
     - -rdc=true
     - -gencode
     - --generate-code*
+    - -Xcudafe
+    - --diag_suppress=*
+    - --expt-relaxed-constexpr
+    - --expt-extended-lambda
 
 Diagnostics:
   UnusedIncludes: None
