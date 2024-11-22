@@ -25,7 +25,7 @@ docker run --gpus all --name <container-name> -it \
     -e HTTPS_PROXY=<proxy-addr>  \
     -e http_proxy=<proxy-addr>  \
     -e https_proxy=<proxy-addr>  \
-    dev/cuda12.2-cudnn8-ubuntu22:latest
+    pjlab-chip/deeplearning:torch2.5-cuda12.6-ubuntu24.04
 ```
 
 Inside the container, clone the repo you forked:

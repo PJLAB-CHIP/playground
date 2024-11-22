@@ -10,6 +10,14 @@ The implementation should be able to achieve at least 90% of the performance of 
 
 ## 2. Benchmark cBlas and cuBlas
 
+Install OpenBLAS before running:
+
+```bash
+apt update && apt install -y libopenblas-dev
+```
+
+Build test executables:
+
 ```bash
 # Build gemm implemented with cblas with float32 as dtype:
 bash scripts/build-task1.sh -v0 -f32
@@ -26,28 +34,11 @@ bash scripts/build-task1.sh -v1 -f16
 > To restart clangd server, press `Ctrl+Shift+P` in VSCode, and select `clangd: Restart language server`.  
 > ![restart-clangd](../docs/imgs/restart-clangd.png)
 
-Run the executables in "[./task-1/bin](./bin)" directory to get the benchmark results.
+Run the executables in "[./build/src](../build/src)" directory to get the benchmark results.
 
 ## 3. Add Your Own Implementation
 
-Go to "[./task-1/include/playground/matmul.hpp](./include/playground/matmul.hpp)", and add a new declaration of function `matmul` inside namespace `playground`.
-
-For example, to implement a new `matmul` function with `DType=float16` and `Version=2`, you can add a new line in the file with `PLAYGROUND_MATMUL_SIG` (playground matmul function signature) macro:
-
-```cpp
-// @file: ./task-1/include/playground/matmul.hpp
-
-// namespace playground {
-// ...
-
-// Create a new declaration for matmul function with DType=float16_t and Version=2
-PLAYGROUND_MATMUL_SIG(float16_t, 2, A, B, C, M, N, K);
-
-// ...
-// } // namespace playground
-```
-
-Then create a `.cu` file in "[./src](./src)" directory with any name you like, and implement the function `matmul` with the signature you just declared.
+Create a `.cu` file in "[./src](./src)" directory with any name you like, and implement the function `matmul` with a proper playground matmul signature.
 
 For example, add following lines in "./src/pjlab/bigchip/f16-v2.cu" to provide the definition for function `matmul<float16_t, 2>`:
 
@@ -65,7 +56,10 @@ PLAYGROUND_MATMUL_SIG(float16_t, 2, A, B, C, M, N, K)
 }
 ```
 
-Now you can build an executable to test your implementation with the following command:
+> 💡**Note**:  
+> - Do not use version 0 and 1 because they are for cblas and cublas respectively. The version must be a `uint8_t`.  
+
+Now you can build an new executable to test your implementation with the following command:
 
 ```bash
 # Build the test binary with DType=float16 and Version=2:
