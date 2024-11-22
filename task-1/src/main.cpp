@@ -95,7 +95,7 @@ auto main() -> int
     else {
         cudaEventRecord(start, nullptr);
         playground::matmul<playground::params::DataType,
-                           uint8_t(playground::params::MatmulVersion)>(
+                           playground::params::MatmulVersion>(
             playground::params::M, playground::params::N, playground::params::K,
             A.data(), B.data(), C.data());
         cudaEventRecord(stop, nullptr);

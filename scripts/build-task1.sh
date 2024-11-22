@@ -14,7 +14,9 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         Release|Debug) 
             BuildType=$1 ;;
-        -v*|--test-matmul-version=*)
+        -v*)
+            TestMatmulVersion="${1#*v}" ;;
+        --test-matmul-version=*)
             TestMatmulVersion="${1#*=}" ;;
         -f32|--float32)
             TestDataType="float32" ;;
@@ -30,7 +32,9 @@ echo  -e "\e[1;32m[@~@] Build Start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 cmake -S ./task-1 -B ./build -G "Ninja" \
     -DCMAKE_BUILD_TYPE=$BuildType \
-    -DTEST_MATMUL_VERSION=$TestMatmulVersion \
+    -DMATMUL_VERSION=$TestMatmulVersion \
     -DTEST_DATA_TYPE=$TestDataType
+
+cmake --build ./build
 
 echo -e "\e[1;32m[@v@] Build Finished <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\e[0m"
