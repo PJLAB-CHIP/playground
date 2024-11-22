@@ -4,22 +4,6 @@
 #include <cstdint>
 #include <cuda_fp16.h>
 
-#ifdef _MSC_VER
-    // Inline
-    #define PG_INLINE inline
-    // Force Inline
-    #define PG_FINLINE __forceinline
-    // No Inline
-    #define PG_NOINLINE __declspec(noinline)
-#else
-    // Inline
-    #define PG_INLINE inline
-    // Force Inline
-    #define PG_FINLINE inline __attribute__((always_inline))
-    // No Inline
-    #define PG_NOINLINE __attribute__((noinline))
-#endif
-
 namespace playground
 {
 

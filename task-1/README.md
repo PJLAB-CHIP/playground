@@ -32,7 +32,7 @@ Run the executables in "[./task-1/bin](./bin)" directory to get the benchmark re
 
 Go to "[./task-1/include/playground/matmul.hpp](./include/playground/matmul.hpp)", and add a new declaration of function `matmul` inside namespace `playground`.
 
-For example, to implement a new `matmul` function with `DType=float16` and `Version=2`, you can add a new line in the file with `PG_MATMUL_SIG` (playground matmul function signature) macro:
+For example, to implement a new `matmul` function with `DType=float16` and `Version=2`, you can add a new line in the file with `PLAYGROUND_MATMUL_SIG` (playground matmul function signature) macro:
 
 ```cpp
 // @file: ./task-1/include/playground/matmul.hpp
@@ -41,7 +41,7 @@ For example, to implement a new `matmul` function with `DType=float16` and `Vers
 // ...
 
 // Create a new declaration for matmul function with DType=float16_t and Version=2
-PG_MATMUL_SIG(float16_t, 2, A, B, C, M, N, K);
+PLAYGROUND_MATMUL_SIG(float16_t, 2, A, B, C, M, N, K);
 
 // ...
 // } // namespace playground
@@ -58,7 +58,7 @@ For example, add following lines in "./src/pjlab/bigchip/f16-v2.cu" to provide t
 
 namespace playground {
 // Implement the matmul function with DType=float16_t and Version=2
-PG_MATMUL_SIG(float16_t, 2, A, B, C, M, N, K)
+PLAYGROUND_MATMUL_SIG(float16_t, 2, A, B, C, M, N, K)
 {
     // ......
 }

@@ -8,7 +8,7 @@
 
 namespace playground
 {
-PG_MATMUL_SIG(float16_t, CBLAS_VER, M, N, K, A, B, C)
+PLAYGROUND_MATMUL_SIG(float16_t, 0, M, N, K, A, B, C)
 {
     std::vector<float32_t> Af32, Bf32, Cf32;
     // Convert float16_t to float32_t, storing in Af32, Bf32, Cf32

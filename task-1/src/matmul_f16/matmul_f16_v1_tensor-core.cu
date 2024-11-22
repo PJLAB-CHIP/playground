@@ -1,14 +1,14 @@
 #include <cublas_v2.h>
 #include <cuda_runtime.h>
+#include <library_types.h>
 
 #include "playground/matmul.hpp"
 #include "playground/static.hpp"
 #include "playground/system.hpp"
-#include "playground/utils.hpp"
 
 namespace playground
 {
-PG_MATMUL_SIG(float16_t, CUBLAS_VER, M, N, K, A, B, C)
+PLAYGROUND_MATMUL_SIG(float16_t, 1, M, N, K, A, B, C)
 {
     const float16_t Alpha = 1.0f;
     const float16_t Beta = 0.0f;

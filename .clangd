@@ -1,6 +1,8 @@
 CompileFlags:
   Add: 
-    - --cuda-gpu-arch=sm_86  # A100
+    - -Wall
+    - -Wextra
+    - --no-cuda-version-check
   Remove:
     - -ccbin
     - -forward-unknown-to-host-compiler
@@ -11,9 +13,11 @@ CompileFlags:
     - --diag_suppress=*
     - --expt-relaxed-constexpr
     - --expt-extended-lambda
+    - -Xcompiler*
+    - -arch=*
 
 Diagnostics:
-  UnusedIncludes: None
+  UnusedIncludes: Strict
 
   ClangTidy:
     Add: [
@@ -40,11 +44,7 @@ Diagnostics:
       readability-identifier-naming.FunctionCase: lowerCamelCase
       readability-identifier-naming.ClassMethodCase: lowerCamelCase
       readability-identifier-naming.MethodCase: lowerCamelCase
-
+    
     Remove: [
-      modernize-use-trailing-return-type,
-      modernize-use-nodiscard,
-      modernize-avoid-c-arrays,
+      modernize-avoid-c-arrays
     ]
-
-

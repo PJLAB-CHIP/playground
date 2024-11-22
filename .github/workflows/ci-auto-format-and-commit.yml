@@ -1,0 +1,55 @@
+name: "[CI] Auto Format and Commit"
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          # You should add a Personal Access Token (PAT) to the repository secrets
+          token: ${{ secrets.PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install formatter
+        run: |
+          sudo apt-get install clang-format
+          python -m pip install black
+
+      - name: Run format script
+        run: bash scripts/format.sh -cxx -py
+      
+      - name: Check for Uncommitted Changes
+        id: format_check
+        run: |
+          # Check if clang-format introduced any changes
+          if [[ `git status --porcelain` ]]; then
+            echo "Files were not properly formatted. The changes will be pushed to branch main."
+            echo "format_status=fail" >> $GITHUB_OUTPUT
+          else
+            echo "All files are properly formatted."
+            echo "format_status=pass" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and Push to main
+        if : ${{ steps.format_check.outputs.format_status == 'fail' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "[skip ci] Auto-format code with clang-format"
+          git push origin main

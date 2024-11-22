@@ -27,7 +27,7 @@ public:
 };
 
 template <typename DType>
-inline cublasHandle_t& s_getCublasHandle()
+inline auto s_getCublasHandle() -> cublasHandle_t&
 {
     static CuBLASHandle<DType> handle;
     return handle.handle;
