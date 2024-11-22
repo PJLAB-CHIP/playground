@@ -4,34 +4,35 @@ cmake_minimum_required(VERSION 3.30)
 # Project Name
 project(Playground-Task1)
 
-# Compiler Configurations
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Compiler.cmake)
+# Compiler configurations for cpp, e.g., g++, clang++, msvc(cl), etc.
+include(${PROJECT_SOURCE_DIR}/cmake/compilers/cxx-compiler-configs.cmake)
+# Compiler configurations for CUDA 
+include(${PROJECT_SOURCE_DIR}/cmake/compilers/cuda-compiler-configs.cmake)
+# Some preparational steps for linking CUDA libraries:
+include(${PROJECT_SOURCE_DIR}/cmake/libraries/libcuda.cmake)
 
 # Set the Target Name and Add Executable
 set(TARGET_NAME task1)
 file(GLOB_RECURSE CXX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE CUDA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cu)
 add_executable(${TARGET_NAME} ${CXX_SOURCES} ${CUDA_SOURCES})
+
+# Find openblas libraries. 
+# [NOTE] Install OpenBlas by running:
+#        |- $ apt install libopenblas-dev
+find_library(OPENBLAS_LIBRARAY openblas REQUIRED)
+target_link_libraries(${TARGET_NAME} PRIVATE ${OPENBLAS_LIBRARAY})
+
 target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(
+    ${TARGET_NAME} PRIVATE 
+    CUDA::cudart 
+    CUDA::cublas
+    ${OPENBLAS_LIBRARAY}
+)
 
 # Generate preprocessed file and assembly file
 target_compile_options(${TARGET_NAME} PRIVATE -save-temps)
 
 # Define Macros for compiling the target
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Macros.cmake)
-
-# Include and Link to Libraries
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Libraries.cmake)
-
-# Set Binary Output Path
-if(NOT DEFINED TARGET_BIN_OUTPUT_DIR)
-    set(TARGET_BIN_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-set(TARGET_BIN_OUTPUT_NAME "${TARGET_NAME}_${TEST_DATA_TYPE}_v${TEST_KERNEL_VERSION}")
-set_target_properties(
-    ${TARGET_NAME} PROPERTIES 
-    RUNTIME_OUTPUT_DIRECTORY 
-        ${TARGET_BIN_OUTPUT_DIR}/bin/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}
-    OUTPUT_NAME 
-        ${TARGET_BIN_OUTPUT_NAME}
-)

@@ -3,16 +3,6 @@
 # @note Create target ${TARGET_NAME} before including this file.
 # ==================================================================================================
 
-# Build Type
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(${TARGET_NAME} PRIVATE RELEASE_BUILD)
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(${TARGET_NAME} PRIVATE DEBUG_BUILD)
-else()
-    message(FATAL_ERROR "Unsupported build type")
-endif()
-message(STATUS "[playground] Build Type: ${CMAKE_BUILD_TYPE}")
-
 # Test Kernel Version
 if(NOT DEFINED TEST_KERNEL_VERSION)
     set(TEST_KERNEL_VERSION 0)

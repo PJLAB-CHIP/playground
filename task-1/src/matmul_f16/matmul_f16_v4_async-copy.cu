@@ -1,11 +1,17 @@
+#include <algorithm>
 #include <cuda_fp16.h>
 #include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <driver_types.h>
 #include <mma.h>
+#include <vector_types.h>
 
 #include "playground/common.hpp"
 #include "playground/hyperparams.hpp"
+#include "playground/logging.hpp"
 #include "playground/matmul.hpp"
 #include "playground/ptx.hpp"
+#include "playground/system.hpp"
 #include "playground/utils.hpp"
 
 using namespace nvcuda;
@@ -17,33 +23,33 @@ using namespace hgemm;
 __global__ void hgemmV4_kernel(const float16_t* const A, const float16_t* const B, float16_t* const C,
                                const size_t M, const size_t N, const size_t K)
 {
-    const size_t M_tiles = ceilDivide(M, WMMA_M);
-    const size_t N_tiles = ceilDivide(N, WMMA_N);
-    const size_t K_tiles = ceilDivide(K, WMMA_K);
+    const size_t MTiles = ceilDivide(M, WMMA_M);
+    const size_t NTiles = ceilDivide(N, WMMA_N);
+    const size_t KTiles = ceilDivide(K, WMMA_K);
 
-    const size_t block_tile_i = (blockIdx.z % 2) ? ((gridDim.y - blockIdx.y - 1) * BLOCK_COL_TILES)
+    const size_t BlockTileI = ((blockIdx.z % 2) != 0u) ? ((gridDim.y - blockIdx.y - 1) * BLOCK_COL_TILES)
                                                  : (blockIdx.y * BLOCK_COL_TILES);
-    const size_t block_tile_j = (blockIdx.z * gridDim.x + blockIdx.x) * BLOCK_ROW_TILES;
+    const size_t BlockTileJ = (blockIdx.z * gridDim.x + blockIdx.x) * BLOCK_ROW_TILES;
 
-    if (block_tile_i >= M_tiles || block_tile_j >= N_tiles) {
+    if (BlockTileI >= MTiles || BlockTileJ >= NTiles) {
         return;
     }
 
     extern __shared__ half smem[][AB_SMEM_STRIDE];
 
-    const size_t warp_id = threadIdx.x / WARP_SIZE;
-    const size_t lane_id = threadIdx.x % WARP_SIZE;
+    const size_t WarpId = threadIdx.x / WARP_SIZE;
+    const size_t LaneId = threadIdx.x % WARP_SIZE;
 
-    constexpr size_t B_smem_idx_off = BLOCK_ROWS;
+    constexpr size_t BSmemIdxOff = BLOCK_ROWS;
 
     half* smem_warp_tile_ptr = &smem[0][0] +
-                               (warp_id / BLOCK_ROW_WARPS) * C_SMEM_STRIDE * WARP_ROWS +
-                               (warp_id % BLOCK_ROW_WARPS) * C_SMEM_OFFSET;
+                               (WarpId / BLOCK_ROW_WARPS) * C_SMEM_STRIDE * WARP_ROWS +
+                               (WarpId % BLOCK_ROW_WARPS) * C_SMEM_OFFSET;
 
-    half* smem_warp_stream_ptr = &smem[0][0] + warp_id * WMMA_M * 2 * C_SMEM_STRIDE;
+    half* smem_warp_stream_ptr = &smem[0][0] + WarpId * WMMA_M * 2 * C_SMEM_STRIDE;
 
-    const size_t gmem_idx = (block_tile_i + warp_id * 2) * WMMA_M * N + block_tile_j * WMMA_N;
-    half* src_gmem_warp_stream_ptr = &C[gmem_idx];
+    const size_t GmemIdx = (BlockTileI + WarpId * 2) * WMMA_M * N + BlockTileJ * WMMA_N;
+    half* src_gmem_warp_stream_ptr = &C[GmemIdx];
 
     wmma::fragment<wmma::accumulator, WMMA_M, WMMA_N, WMMA_K, half> C_frag[WARP_COL_TILES]
                                                                           [WARP_ROW_TILES];
@@ -57,25 +63,25 @@ __global__ void hgemmV4_kernel(const float16_t* const A, const float16_t* const 
     }
 
     const half* A_warp_ptr =
-        &A[block_tile_i * WMMA_M * K] + BLOCK_ROWS / WARPS_PER_BLOCK * K * warp_id;
+        &A[BlockTileI * WMMA_M * K] + BLOCK_ROWS / WARPS_PER_BLOCK * K * WarpId;
     const half* B_warp_ptr =
-        &B[block_tile_j * WMMA_N * K] + BLOCK_COLS / WARPS_PER_BLOCK * K * warp_id;
+        &B[BlockTileJ * WMMA_N * K] + BLOCK_COLS / WARPS_PER_BLOCK * K * WarpId;
 
-    constexpr size_t A_smem_iters = BLOCK_ROWS / (CHUNK_COPY_LINES_PER_WARP * WARPS_PER_BLOCK);
-    constexpr size_t B_smem_iters = BLOCK_COLS / (CHUNK_COPY_LINES_PER_WARP * WARPS_PER_BLOCK);
+    constexpr size_t ASmemIters = BLOCK_ROWS / (CHUNK_COPY_LINES_PER_WARP * WARPS_PER_BLOCK);
+    constexpr size_t BSmemIters = BLOCK_COLS / (CHUNK_COPY_LINES_PER_WARP * WARPS_PER_BLOCK);
 
 #pragma unroll
-    for (size_t tile_k = 0; tile_k < K_tiles; tile_k += CHUNK_K) {
-        size_t A_smem_idx = BLOCK_ROWS / WARPS_PER_BLOCK * warp_id;
+    for (size_t tile_k = 0; tile_k < KTiles; tile_k += CHUNK_K) {
+        size_t A_smem_idx = BLOCK_ROWS / WARPS_PER_BLOCK * WarpId;
         int4* A_lane_ptr =
-            (int4*) (A_warp_ptr + tile_k * WMMA_K + (lane_id / CHUNK_COPY_LINE_LANES) * K) +
-            (lane_id % CHUNK_COPY_LINE_LANES);
-        A_smem_idx += lane_id / CHUNK_COPY_LINE_LANES;
+            (int4*) (A_warp_ptr + tile_k * WMMA_K + (LaneId / CHUNK_COPY_LINE_LANES) * K) +
+            (LaneId % CHUNK_COPY_LINE_LANES);
+        A_smem_idx += LaneId / CHUNK_COPY_LINE_LANES;
 
 #pragma unroll
-        for (size_t i = 0; i < A_smem_iters; ++i) {
+        for (size_t i = 0; i < ASmemIters; ++i) {
             uint32_t A_smem_lane_addr = __cvta_generic_to_shared(&smem[A_smem_idx][0]) +
-                                        (lane_id % CHUNK_COPY_LINE_LANES) * THREAD_COPY_BYTES;
+                                        (LaneId % CHUNK_COPY_LINE_LANES) * THREAD_COPY_BYTES;
 
             CP_ASYNC_CG(A_smem_lane_addr, A_lane_ptr, THREAD_COPY_BYTES);
 
@@ -83,16 +89,16 @@ __global__ void hgemmV4_kernel(const float16_t* const A, const float16_t* const 
             A_smem_idx += CHUNK_COPY_LINES_PER_WARP;
         }
 
-        size_t B_smem_idx = B_smem_idx_off + BLOCK_COLS / WARPS_PER_BLOCK * warp_id;
+        size_t B_smem_idx = BSmemIdxOff + BLOCK_COLS / WARPS_PER_BLOCK * WarpId;
         int4* B_lane_ptr =
-            (int4*) (B_warp_ptr + tile_k * WMMA_K + (lane_id / CHUNK_COPY_LINE_LANES) * K) +
-            (lane_id % CHUNK_COPY_LINE_LANES);
-        B_smem_idx += lane_id / CHUNK_COPY_LINE_LANES;
+            (int4*) (B_warp_ptr + tile_k * WMMA_K + (LaneId / CHUNK_COPY_LINE_LANES) * K) +
+            (LaneId % CHUNK_COPY_LINE_LANES);
+        B_smem_idx += LaneId / CHUNK_COPY_LINE_LANES;
 
 #pragma unroll
-        for (size_t i = 0; i < B_smem_iters; ++i) {
+        for (size_t i = 0; i < BSmemIters; ++i) {
             uint32_t B_smem_lane_addr = __cvta_generic_to_shared(&smem[B_smem_idx][0]) +
-                                        (lane_id % CHUNK_COPY_LINE_LANES) * THREAD_COPY_BYTES;
+                                        (LaneId % CHUNK_COPY_LINE_LANES) * THREAD_COPY_BYTES;
 
             CP_ASYNC_CG(B_smem_lane_addr, B_lane_ptr, THREAD_COPY_BYTES);
 
@@ -114,7 +120,7 @@ __global__ void hgemmV4_kernel(const float16_t* const A, const float16_t* const 
 
 #pragma unroll
             for (size_t i = 0; i < WARP_COL_TILES; ++i) {
-                size_t A_smem_idx = (warp_id / BLOCK_ROW_WARPS) * WARP_ROWS + i * WMMA_M;
+                size_t A_smem_idx = (WarpId / BLOCK_ROW_WARPS) * WARP_ROWS + i * WMMA_M;
                 const half* A_tile_ptr = &smem[A_smem_idx][k_step * WMMA_K];
 
                 wmma::load_matrix_sync(A_frag[i], A_tile_ptr, AB_SMEM_STRIDE);
@@ -123,7 +129,7 @@ __global__ void hgemmV4_kernel(const float16_t* const A, const float16_t* const 
 #pragma unroll
             for (size_t j = 0; j < WARP_ROW_TILES; ++j) {
                 size_t B_smem_idx =
-                    B_smem_idx_off + (warp_id % BLOCK_ROW_WARPS) * WARP_COLS + j * WMMA_N;
+                    BSmemIdxOff + (WarpId % BLOCK_ROW_WARPS) * WARP_COLS + j * WMMA_N;
                 const half* B_tile_ptr = &smem[B_smem_idx][k_step * WMMA_K];
 
                 wmma::load_matrix_sync(B_frag[j], B_tile_ptr, AB_SMEM_STRIDE);
@@ -157,8 +163,8 @@ __global__ void hgemmV4_kernel(const float16_t* const A, const float16_t* const 
 
 #pragma unroll
     for (size_t i = 0; i < WMMA_M; ++i) {
-        *((int4*) (src_gmem_warp_stream_ptr + (i * 2 + lane_id / 16) * N) + lane_id % 16) = *(
-            (int4*) (smem_warp_stream_ptr + (i * 2 + lane_id / 16) * C_SMEM_STRIDE) + lane_id % 16);
+        *((int4*) (src_gmem_warp_stream_ptr + (i * 2 + LaneId / 16) * N) + LaneId % 16) = *(
+            (int4*) (smem_warp_stream_ptr + (i * 2 + LaneId / 16) * C_SMEM_STRIDE) + LaneId % 16);
     }
 }
 

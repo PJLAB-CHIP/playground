@@ -3,4 +3,6 @@ cmake_minimum_required(VERSION 3.30)
 
 project(playground)
 
-add_subdirectory("task-${TASK_NO}")
+set(PLAYGROUND_PROJECT_DIR ${PROJECT_SOURCE_DIR})
+
+add_subdirectory("task-1")
