@@ -25,7 +25,7 @@ if [[ "$FORMAT_C_CXX" == "true" ]]; then
     echo "Formatting C/C++/CUDA files..."
     files=$(git ls-files | grep -E '\.(c|h|cpp|hpp|cu|cuh)$')
     if [[ -n "$files" ]]; then
-        clang-format -i $files --Werror
+        clang-format -i $files
     fi
 fi
 
@@ -33,7 +33,7 @@ if [[ "$FORMAT_PYTHON" == "true" ]]; then
     echo "Formatting Python files..."
     files=$(git ls-files '*.py')
     if [[ -n "$files" ]]; then
-        black --quiet --fast $files --diff
+        black --quiet --fast $files
     fi
 fi
 
