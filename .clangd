@@ -15,6 +15,9 @@ CompileFlags:
     - --expt-extended-lambda
     - -Xcompiler*
     - -arch=*
+    - -fmodules*
+    - -fmodule-mapper*
+    - -fdeps-format*
 
 Diagnostics:
   UnusedIncludes: Strict
