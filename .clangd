@@ -1,53 +1,52 @@
-CompileFlags:
-  Add: 
-    - -Wall
-    - -Wextra
-    - --no-cuda-version-check
-  Remove:
-    - -ccbin
-    - -forward-unknown-to-host-compiler
-    - -rdc=true
-    - -gencode
-    - --generate-code*
-    - -Xcudafe
-    - --diag_suppress=*
-    - --expt-relaxed-constexpr
-    - --expt-extended-lambda
-    - -Xcompiler*
-    - -arch=*
-    - -fmodules*
-    - -fmodule-mapper*
-    - -fdeps-format*
+Index:
+  Background: Build
+  StandardLibrary: Yes
 
 Diagnostics:
-  UnusedIncludes: Strict
+  UnusedIncludes: None
+  MissingIncludes: None
 
   ClangTidy:
     Add: [
       performance-*,
       modernize-*,
       clang-analyzer-*,
-      readability-identifier-naming,
-      readability-braces-around-statements,
-      readability-identifier-naming,
-      readability-implicit-bool-conversion,
-      readability-qualified-auto,
-      readability-redundant-member-init
+      readability-*,
     ]
 
-    CheckOptions:
-      readability-identifier-naming.VariableCase: lowerCamelCase
-      readability-identifier-naming.ProtectedMemberCase: lowerCamelCase
-      readability-identifier-naming.PrivateMemberCase: lowerCamelCase
-      readability-identifier-naming.PublicMemberCase: lowerCamelCase
-      readability-identifier-naming.NamespaceCase: lower_case
-      readability-identifier-naming.EnumCase: lowerCamelCase
-      readability-identifier-naming.ClassCase: CamelCase
-      readability-identifier-naming.StructCase: CamelCase
-      readability-identifier-naming.FunctionCase: lowerCamelCase
-      readability-identifier-naming.ClassMethodCase: lowerCamelCase
-      readability-identifier-naming.MethodCase: lowerCamelCase
-    
     Remove: [
-      modernize-avoid-c-arrays
+      readability-isolate-declaration,
+      readability-identifier-length,
+      readability-magic-numbers,
+      readability-function-cognitive-complexity,
+      readability-redundant-access-specifiers,
+      modernize-avoid-c-arrays,
+      readability-math-missing-parentheses,
     ]
+
+CompileFlags:
+  Add: 
+    - -Wall
+    - -Wextra
+  Remove:
+    - -ccbin
+    - -forward-unknown-to-host-compiler
+    - --generate-code*
+    - -arch*
+    - -rdc=true
+    - -Xcudafe
+    - --diag_suppress=*
+    - --expt-relaxed-constexpr
+    - --expt-extended-lambda
+    - -Xcompiler*
+    - -fmodules*
+    - -fmodule-mapper*
+    - -fdeps-format*
+
+---
+
+If:
+  PathMatch: [.*\.cu, .*\.cuh]
+CompileFlags:
+  Add: 
+    - --cuda-gpu-arch=sm_89

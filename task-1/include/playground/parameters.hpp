@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cuda_fp16.h>
 #include <string_view>
 
@@ -21,15 +23,4 @@ constexpr std::string_view DataTypeName = "f32";
 #endif
 constexpr auto MatmulVersion = uint8_t(MATMUL_VERSION);
 // -----------------------------------------------------------------------------
-
-// Size of Matrices
-// mat(M,K) @ mat(K,N) = mat(M,N)
-constexpr uint32_t M = 4096, N = 4096, K = 4096;
-
-// Repeated Times
-constexpr size_t NumRep = 100;
-
-// Warmup Times
-constexpr size_t NumWarmup = 10;
-
 }  // namespace playground::params

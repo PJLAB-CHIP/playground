@@ -5,7 +5,7 @@ file(GLOB_RECURSE CUDA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cu)
 add_executable(${TARGET_NAME} ${CXX_SOURCES} ${CUDA_SOURCES})
 
 # [NOTE] Uncomment this to generate preprocessed file and assembly file
-## target_compile_options(${TARGET_NAME} PRIVATE -save-temps)
+# target_compile_options(${TARGET_NAME} PRIVATE -save-temps)
 
 log_info("Matmul Version: ${MATMUL_VERSION}")
 target_compile_definitions(
@@ -31,6 +31,8 @@ target_link_libraries(
     CUDA::cudart 
     CUDA::cublas
     ${OPENBLAS_LIBRARAY}
+    cxxopts::cxxopts
+    spdlog::spdlog
 )
 
 set(TARGET_BIN_OUTPUT_NAME "${TARGET_NAME}_${TEST_DATA_TYPE}_v${MATMUL_VERSION}")

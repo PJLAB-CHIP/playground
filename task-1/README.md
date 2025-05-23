@@ -49,7 +49,7 @@ For example, add following lines in "./src/pjlab/bigchip/f16-v2.cu" to provide t
 
 namespace playground {
 // Implement the matmul function with DType=float16_t and Version=2
-PLAYGROUND_MATMUL_SIG(float16_t, 2, A, B, C, M, N, K)
+PLAYGROUND_MATMUL_DEC(float16_t, 2, A, B, C, M, N, K)
 {
     // ......
 }
