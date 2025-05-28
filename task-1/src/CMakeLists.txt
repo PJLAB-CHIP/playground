@@ -5,7 +5,7 @@ file(GLOB_RECURSE CUDA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cu)
 add_executable(${TARGET_NAME} ${CXX_SOURCES} ${CUDA_SOURCES})
 
 # [NOTE] Uncomment this to generate preprocessed file and assembly file
-## target_compile_options(${TARGET_NAME} PRIVATE -save-temps)
+# target_compile_options(${TARGET_NAME} PRIVATE -save-temps)
 
 log_info("Matmul Version: ${MATMUL_VERSION}")
 target_compile_definitions(
@@ -30,7 +30,9 @@ target_link_libraries(
     ${TARGET_NAME} PRIVATE 
     CUDA::cudart 
     CUDA::cublas
-    ${OPENBLAS_LIBRARAY}
+    OpenBLAS::OpenBLAS
+    cxxopts::cxxopts
+    nvidia::cutlass::cutlass
 )
 
 set(TARGET_BIN_OUTPUT_NAME "${TARGET_NAME}_${TEST_DATA_TYPE}_v${MATMUL_VERSION}")
@@ -38,4 +40,10 @@ set_target_properties(
     ${TARGET_NAME} PROPERTIES 
     OUTPUT_NAME 
         ${TARGET_BIN_OUTPUT_NAME}
+)
+
+# Add TARGET_BIN_OUTPUT_NAME to compile definitions
+target_compile_definitions(
+    ${TARGET_NAME} PRIVATE 
+    TARGET_BIN_OUTPUT_NAME="${TARGET_BIN_OUTPUT_NAME}"
 )

@@ -5,9 +5,9 @@
 
 namespace playground
 {
-PLAYGROUND_MATMUL_SIG(float32_t, 0, M, N, K, A, B, C)
+PLAYGROUND_MATMUL_DEC(float32_t, 0, m, n, k, A, B, C)
 {
-    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, M, N, K, 1.0f, A, K,
-                B, N, 0.0f, C, N);
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, 1.0F, A, k,
+                B, n, 0.0F, C, n);
 }
 }  // namespace playground

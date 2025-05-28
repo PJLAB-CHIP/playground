@@ -33,3 +33,5 @@
 
 # CMake Build Dir
 build
+
+**/*.ncu-rep

@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cuda_fp16.h>
+#include <string_view>
 
 namespace playground
 {
@@ -25,3 +26,22 @@ using float16_t = half;
 static_assert(sizeof(float16_t) == 2, "float16_t must be 2 bytes");
 
 }  // namespace playground
+
+namespace playground::params
+{
+// =============================================================================
+// @Note `DataType` and `MatmulVersion` are managed by CMake automatically.
+// -----------------------------------------------------------------------------
+#ifdef TEST_FLOAT16
+using DataType = float16_t;
+constexpr std::string_view DataTypeName = "float16";
+#else
+using DataType = playground::float32_t;
+constexpr std::string_view DataTypeName = "float32";
+#endif
+#ifndef MATMUL_VERSION
+    #define MATMUL_VERSION 0  // cBLAS
+#endif
+
+constexpr auto MatmulVersion = uint8_t(MATMUL_VERSION);
+}
