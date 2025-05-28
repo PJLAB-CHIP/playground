@@ -92,8 +92,9 @@ void test(uint32_t m, uint32_t n, uint32_t k, uint32_t nWarmupRound,
 
 auto main(int argc, const char* argv[]) -> int
 {
-    auto options = cxxopts::Options(TARGET_BIN_OUTPUT_NAME,
-                                    "Playground Task1: General Matrix Multiplication");
+    auto options =
+        cxxopts::Options(TARGET_BIN_OUTPUT_NAME,
+                         "Playground Task1: General Matrix Multiplication");
     // clang-format off
     options.add_options()
         ("m", "Num of rows of A and C", 

@@ -44,4 +44,4 @@ constexpr std::string_view DataTypeName = "float32";
 #endif
 
 constexpr auto MatmulVersion = uint8_t(MATMUL_VERSION);
-}
+}  // namespace playground::params
