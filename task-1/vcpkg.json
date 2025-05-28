@@ -1,6 +1,7 @@
 {
     "dependencies": [
+        "openblas",
         "cxxopts",
-        "spdlog"
+        "nvidia-cutlass"
     ]
 }

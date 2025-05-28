@@ -30,9 +30,9 @@ target_link_libraries(
     ${TARGET_NAME} PRIVATE 
     CUDA::cudart 
     CUDA::cublas
-    ${OPENBLAS_LIBRARAY}
+    OpenBLAS::OpenBLAS
     cxxopts::cxxopts
-    spdlog::spdlog
+    nvidia::cutlass::cutlass
 )
 
 set(TARGET_BIN_OUTPUT_NAME "${TARGET_NAME}_${TEST_DATA_TYPE}_v${MATMUL_VERSION}")
@@ -40,4 +40,10 @@ set_target_properties(
     ${TARGET_NAME} PROPERTIES 
     OUTPUT_NAME 
         ${TARGET_BIN_OUTPUT_NAME}
+)
+
+# Add TARGET_BIN_OUTPUT_NAME to compile definitions
+target_compile_definitions(
+    ${TARGET_NAME} PRIVATE 
+    TARGET_BIN_OUTPUT_NAME="${TARGET_BIN_OUTPUT_NAME}"
 )

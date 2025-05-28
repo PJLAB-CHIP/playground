@@ -2,13 +2,13 @@
 
 Playground tasks for newcomers!
 
-## 1. Environments
+## 1. Setup
 
-Fork this repository to your own github account:
+First, fork this repository to your own github account:
 
 ![image](./docs/imgs/fork.png)
 
-Start a docker from image `dev/cuda12.2-cudnn8-ubuntu22:latest`:
+Create a docker container from image `pjlab/deeplearning:v2.0.6-torch2.7.0-cuda12.6.0-ubuntu24.04`, for example:
 
 ```bash
 # Params:
@@ -25,7 +25,7 @@ docker run --gpus all --name <container-name> -it \
     -e HTTPS_PROXY=<proxy-addr>  \
     -e http_proxy=<proxy-addr>  \
     -e https_proxy=<proxy-addr>  \
-    pjlab-chip/deeplearning:torch2.5-cuda12.6-ubuntu24.04
+    pjlab/deeplearning:v2.0.6-torch2.7.0-cuda12.6.0-ubuntu24.04
 ```
 
 Inside the container, clone the repo you forked:
@@ -46,5 +46,5 @@ git config --global user.email "<your-email>"
 
 | No. | Discription | Directory | Document |
 |:---:|:---:|:---:|:---:|
-| 1 | CUDA Programming: GEMM | [./task-1](./task-1) | [READEME.md](./task-1/README.md) |
+| 1 | CUDA Programming: GEMM | [./task-1](./task-1) | [./task-1/READEME.md](./task-1/README.md) |
 

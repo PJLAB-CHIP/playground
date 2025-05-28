@@ -19,10 +19,9 @@ include(${PROJECT_SOURCE_DIR}/cmake/compilers/cxx-compiler-configs.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/compilers/cuda-compiler-configs.cmake)
 # Some preparational steps for linking CUDA libraries:
 include(${PROJECT_SOURCE_DIR}/cmake/libraries/libcuda.cmake)
-# Some preparational steps for linking OpenBLAS libraries:
-include(${PROJECT_SOURCE_DIR}/cmake/libraries/libopenblas.cmake)
 
+find_package(OpenBLAS CONFIG REQUIRED)
 find_package(cxxopts CONFIG REQUIRED)
-find_package(spdlog CONFIG REQUIRED)
+find_package(NvidiaCutlass CONFIG REQUIRED)
 
 add_subdirectory(src)

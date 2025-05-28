@@ -1,13 +1,14 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <random>
 #include <stdexcept>
 #include <vector>
 
 #include "playground/matmul.hpp"
-#include "playground/parameters.hpp"
 #include "playground/system.hpp"
+#include "playground/utils.hpp"
 
 namespace playground
 {
@@ -55,16 +56,18 @@ public:
     }
 
     [[nodiscard]]
-    auto rawPtr() const -> DType*
+    auto get_const_raw_ptr() const -> const DType*
     {
         return ptr;
     }
 
     [[nodiscard]]
-    auto rawPtr() -> DType*
+    auto get_mutable_raw_ptr() -> DType*
     {
         return ptr;
     }
+
+    [[nodiscard]]
 
     explicit operator bool() const
     {
@@ -86,45 +89,45 @@ public:
 
 public:
     [[nodiscard]]
-    auto getAptr() -> params::DataType*
+    auto get_mutable_A_ptr() -> params::DataType*
     {
         return _A.data();
     }
 
     [[nodiscard]]
-    auto getBptr() -> params::DataType*
+    auto get_mutable_B_ptr() -> params::DataType*
     {
         return _B.data();
     }
 
     [[nodiscard]]
-    auto getCptr() -> params::DataType*
+    auto get_mutable_C_ptr() -> params::DataType*
     {
         return _C.data();
     }
 
     [[nodiscard]]
-    auto getGTptr() -> params::DataType*
+    auto get_mutable_GT_ptr() -> params::DataType*
     {
         return _GT.data();
     }
 
     [[nodiscard]]
-    auto getdAptr() -> params::DataType*
+    auto get_mutable_d_A_ptr() -> params::DataType*
     {
-        return _d_A.rawPtr();
+        return _d_A.get_mutable_raw_ptr();
     }
 
     [[nodiscard]]
-    auto getdBptr() -> params::DataType*
+    auto get_mutable_d_B_ptr() -> params::DataType*
     {
-        return _d_B.rawPtr();
+        return _d_B.get_mutable_raw_ptr();
     }
 
     [[nodiscard]]
-    auto getdCptr() -> params::DataType*
+    auto get_mutable_d_C_ptr() -> params::DataType*
     {
-        return _d_C.rawPtr();
+        return _d_C.get_mutable_raw_ptr();
     }
 
     void initHostData()
@@ -149,12 +152,8 @@ public:
         for (size_t i = 0; i < _GT.size(); ++i) {
             gap = float32_t(_GT[i]) - float32_t(_C[i]);
             errSum += ::std::abs(gap / float32_t(_GT[i]));
-
-            if (std::isinf(errSum)) {
-                ::printf("%zu/%zu err_sum: %f, gap: %f, divider: %f\n", i,
-                         _GT.size(), errSum, gap, float32_t(_A[i]));
-                throw std::runtime_error("Error sum is inf");
-            }
+            PLAYGROUND_CHECK(!::std::isinf(errSum));
+            PLAYGROUND_CHECK(!::std::isnan(errSum));
         }
 
         avgErr = errSum / float32_t(_GT.size());
@@ -181,17 +180,17 @@ public:
         _d_B = CudaDeviceMemPtr<params::DataType>(_B.size());
         _d_C = CudaDeviceMemPtr<params::DataType>(_C.size());
 
-        cudaMemcpy(_d_A.rawPtr(), _A.data(),
+        cudaMemcpy(_d_A.get_mutable_raw_ptr(), _A.data(),
                    _A.size() * sizeof(params::DataType),
                    cudaMemcpyHostToDevice);
-        cudaMemcpy(_d_B.rawPtr(), _B.data(),
+        cudaMemcpy(_d_B.get_mutable_raw_ptr(), _B.data(),
                    _B.size() * sizeof(params::DataType),
                    cudaMemcpyHostToDevice);
     }
 
     void copyResultD2H()
     {
-        cudaMemcpy(_C.data(), _d_C.rawPtr(),
+        cudaMemcpy(_C.data(), _d_C.get_mutable_raw_ptr(),
                    _C.size() * sizeof(params::DataType),
                    cudaMemcpyDeviceToHost);
     }

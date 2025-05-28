@@ -50,8 +50,6 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-
-
 cmake -S $SOURCE_DIR -B $BUILD_DIR -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="$VCPKG_HOME/scripts/buildsystems/vcpkg.cmake" \
     -DMATMUL_VERSION=$TEST_MATMUL_VERSION \

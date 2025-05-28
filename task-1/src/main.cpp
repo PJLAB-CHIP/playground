@@ -1,8 +1,9 @@
+#include <chrono>
 #include <cuda_runtime.h>
 #include <cxxopts.hpp>
+#include <format>
 
 #include "playground/matmul.hpp"
-#include "playground/parameters.hpp"
 #include "playground/system.hpp"
 #include "playground/test_data.hpp"
 
@@ -24,14 +25,10 @@ void test(uint32_t m, uint32_t n, uint32_t k, uint32_t nWarmupRound,
 
     auto testData = TestData(m, n, k);
 
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
+    float32_t totalMilliSecs = 0.0F;
 
-    float32_t runtime = 0.0F, totalRuntime = 0.0F;
-
-    ::printf(
-        "[Playgounrd] Start Testing for GEMM Version %d with DType %s ... \n",
+    std::cout << std::format(
+        "[Playground] Start Testing for GEMM Version {} with DType {} ...\n",
         params::MatmulVersion, params::DataTypeName.data());
 
     params::DataType* Aptr = nullptr;
@@ -44,49 +41,59 @@ void test(uint32_t m, uint32_t n, uint32_t k, uint32_t nWarmupRound,
     };
 
     if constexpr (!USING_CPU_MATMUL) {
+        ::cudaEvent_t start, stop;
+        ::cudaEventCreate(&start);
+        ::cudaEventCreate(&stop);
+        float32_t runtime = 0.0F;
         testData.initDeviceData();
-        Aptr = testData.getdAptr();
-        Bptr = testData.getdBptr();
-        Cptr = testData.getdCptr();
+        Aptr = testData.get_mutable_d_A_ptr();
+        Bptr = testData.get_mutable_d_B_ptr();
+        Cptr = testData.get_mutable_d_C_ptr();
         for (size_t i = 0; i < nWarmupRound; ++i) {
             matmulFn();
         }
         for (auto i = 0ULL; i < nTestRound; ++i) {
-            cudaEventRecord(start, nullptr);
+            ::cudaEventRecord(start, nullptr);
             matmulFn();
-            cudaEventRecord(stop, nullptr);
-            cudaEventSynchronize(stop);
-            cudaEventElapsedTime(&runtime, start, stop);
-            totalRuntime += runtime;
+            ::cudaEventRecord(stop, nullptr);
+            ::cudaEventSynchronize(stop);
+            ::cudaEventElapsedTime(&runtime, start, stop);
+            totalMilliSecs += runtime;
         }
         testData.copyResultD2H();
     } else {
-        Aptr = testData.getAptr();
-        Bptr = testData.getBptr();
-        Cptr = testData.getCptr();
-        cudaEventRecord(start, nullptr);
-        matmulFn();
-        cudaEventRecord(stop, nullptr);
-        cudaEventElapsedTime(&runtime, start, stop);
-        totalRuntime += runtime;
+        Aptr = testData.get_mutable_A_ptr();
+        Bptr = testData.get_mutable_B_ptr();
+        Cptr = testData.get_mutable_C_ptr();
+        nTestRound = 10;  // 10 rounds for CPU matmul to avoid long runtime.
+        for (auto i = 0ULL; i < nTestRound; ++i) {
+            auto start = std::chrono::high_resolution_clock::now();
+            matmulFn();
+            auto end = std::chrono::high_resolution_clock::now();
+            totalMilliSecs +=
+                std::chrono::duration<float32_t, std::milli>(end - start)
+                    .count();
+        }
     }
-    cudaDeviceSynchronize();
-    ::printf("[Playground] Calculating Finished\n");
+    ::cudaDeviceSynchronize();
+    std::cout << "[Playground] Calculating Finished\n";
 
     float32_t avgErr = testData.calculateAvgErr();
 
-    float msecPerMatrixMul = totalRuntime / nTestRound;
-    double flopsPerMatrixMul = 2.0 * m * n * k;
-    double tflops =
+    float32_t msecPerMatrixMul = totalMilliSecs / nTestRound;
+    float64_t flopsPerMatrixMul = 2.0 * m * n * k;
+    float64_t tflops =
         (flopsPerMatrixMul * 1.0e-12F) / (msecPerMatrixMul / 1000.0F);
 
-    ::printf("[Playground] Result >>> TFLOPS: %lf; Average Error: %f\n",
-             tflops, avgErr);
+    std::cout << std::format(
+        "[Playground] Result >>> TFLOPS: {}; Average Error: {}\n", tflops,
+        avgErr);
 }
 
 auto main(int argc, const char* argv[]) -> int
 {
-    auto options = cxxopts::Options("Playground", "Matrix Multiplication");
+    auto options = cxxopts::Options(TARGET_BIN_OUTPUT_NAME,
+                                    "Playground Task1: General Matrix Multiplication");
     // clang-format off
     options.add_options()
         ("m", "Num of rows of A and C", 
@@ -108,10 +115,9 @@ auto main(int argc, const char* argv[]) -> int
     uint32_t k = results["k"].as<uint32_t>();
     uint32_t nWarmupRound = results["w"].as<uint32_t>();
     uint32_t nTestRound = results["t"].as<uint32_t>();
-    bool showHelp = results["h"].as<bool>();
 
-    if (showHelp) {
-        ::puts(options.help().c_str());
+    if (results["h"].as<bool>()) {
+        std::cout << options.help() + "\n";
         return 0;
     }
 

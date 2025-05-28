@@ -2,32 +2,28 @@
 
 High performance gemm implementation on Nvidia A100 ([internal feishu doc](https://aicarrier.feishu.cn/wiki/EvivwNtVRij2XVk0i36cBN8Bn1f)).
 
-## 1. 🎯Target
+## 1. Target
 
 Implement a high performance gemm (General Matrix Multiply) function with CUDA on Nvidia A100 for float32 and float16 data types.
 
-The implementation should be able to achieve at least 90% of the performance of cuBLAS, with the given benchmarking structure.
+The implementation should be able to achieve at least **90%** of the performance of cuBLAS, with the given benchmarking structure.
 
 ## 2. Benchmark cBlas and cuBlas
 
-Install OpenBLAS before running:
+Build example matmul with the following commands:
 
 ```bash
-apt update && apt install -y libopenblas-dev
+# Build gemm implemented with CBLAS (CPU) under float32:
+bash scripts/build-task1.sh -f32 -v0
+# Build gemm implemented with CBLAS (CPU) under float16:
+bash scripts/build-task1.sh -f16 -v0
+# Build gemm implemented with cublas (CUDA) under float32:
+bash scripts/build-task1.sh -f32 -v1
+# Build gemm implemented with cublas (CUDA) under float16:
+bash scripts/build-task1.sh -f16 -v1
 ```
 
-Build test executables:
-
-```bash
-# Build gemm implemented with cblas with float32 as dtype:
-bash scripts/build-task1.sh -v0 -f32
-# Build gemm implemented with cblas with float16 as dtype:
-bash scripts/build-task1.sh -v0 -f16
-# Build gemm implemented with cublas with float32 as dtype:
-bash scripts/build-task1.sh -v1 -f32
-# Build gemm implemented with cublas with float16 as dtype:
-bash scripts/build-task1.sh -v1 -f16
-```
+For more compile options, see "[./scripts/build-task1.sh](../scripts/build-task1.sh)".
 
 > 💡**Note**:  
 > It is suggested to restart clangd server after building (to avoid some code analysis errors).  
@@ -36,14 +32,20 @@ bash scripts/build-task1.sh -v1 -f16
 
 Run the executables in "[./build/src](../build/src)" directory to get the benchmark results.
 
+You can set `m`, `n`, `k`, `n_warmup` and `n_test` by passing arguments to all executables built in this task. For details, use `-h`, for example:
+
+```bash
+build/src/task1_float16_v0 -h
+```
+
 ## 3. Add Your Own Implementation
 
-Create a `.cu` file in "[./src](./src)" directory with any name you like, and implement the function `matmul` with a proper playground matmul signature.
+Create a `.cu` file under directory "[./task-1/src](./src)" with any name you like, and implement a matmul function with macro `PLAYGROUND_MATMUL_DEC`.
 
-For example, add following lines in "./src/pjlab/bigchip/f16-v2.cu" to provide the definition for function `matmul<float16_t, 2>`:
+For example, add following lines in "./task-1/src/xxx/xxx/f16-v2.cu" to provide the definition for function `matmul<float16_t, 2>`:
 
 ```cpp
-// @file: ./task-1/src/pjlab/bigchip/f16-v2.cu
+// @file: ./task-1/src/xxx/xxx/f16-v2.cu
 
 #include "playground/matmul.hpp"
 
@@ -57,7 +59,7 @@ PLAYGROUND_MATMUL_DEC(float16_t, 2, A, B, C, M, N, K)
 ```
 
 > 💡**Note**:  
-> - Do not use version 0 and 1 because they are for cblas and cublas respectively. The version must be a `uint8_t`.  
+> Do not use version 0 and 1 because they are for cblas and cublas respectively.
 
 Now you can build an new executable to test your implementation with the following command:
 
@@ -66,7 +68,28 @@ Now you can build an new executable to test your implementation with the followi
 bash scripts/build.sh -v2 -f16
 ```
 
-## 4.Example final results
+## 4. Profile Your Kernel with Nsight Compute
+
+Use "[scripts/nsight-profile.sh](../scripts/nsight-profile.sh)" to profile an executable which contains **a self-defined cuda kernel**.
+
+⚠️ **The profiled executable must be built with `RelWithDebInfo` or `RD` flag**:
+
+```bash
+# `RD` is the same as `RelWithDebInfo`
+bash scripts/build-task1.sh RD -f16 -v2 
+```
+
+Then you can profile the executable with `ncu`:
+
+```bash
+bash scripts/nsight-profile.sh -t build/src/task1_float16_v2
+```
+
+A `.ncu-rep` file will be generated in the current directory. Download it to your local machine and open it with Nsight Compute GUI.
+
+![ncu-example](../docs/imgs/ncu-example.png)
+
+## 5. Example Target Results
 
 ### CUDA Core(FP32)
 | Version | v0 | v1 | v2 | v3 | v4 | cuBLAS | Theory Peak |
@@ -84,7 +107,7 @@ bash scripts/build.sh -v2 -f16
 > 💡**Note**:  
 > Some card can reach above 250 TFLOPS using cuBLAS fp16. The target is the 90% of cuBLAS on the same card
 
-## 5. References
+## 6. References
 See also: [feishu doc: cuda学习资料](https://aicarrier.feishu.cn/wiki/SFdnw61vHi1AfRkeJVecgMjBnrc)
 
 ### CUDA Core
