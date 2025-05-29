@@ -10,7 +10,7 @@ The implementation should be able to achieve at least **90%** of the performance
 
 ## 2. Benchmark cBlas and cuBlas
 
-Build example matmul with the following commands:
+Build example matmul with the following commands (`v0 -> cblas`; `v1 -> cublas`):
 
 ```bash
 # Build gemm implemented with CBLAS (CPU) under float32:
@@ -30,19 +30,20 @@ For more compile options, see "[./scripts/build-task1.sh](../scripts/build-task1
 > To restart clangd server, press `Ctrl+Shift+P` in VSCode, and select `clangd: Restart language server`.  
 > ![restart-clangd](../docs/imgs/restart-clangd.png)
 
-Run the executables in "[./build/src](../build/src)" directory to get the benchmark results.
+Run the binarys in "[./build/src](../build/src)" directory to get the benchmark results.
 
-You can set `m`, `n`, `k`, `n_warmup` and `n_test` by passing arguments to all executables built in this task. For details, use `-h`, for example:
+You can set `m`, `n`, `k`, `n_warmup` and `n_test` by passing arguments to binarys built in this task. Use `-h` to print help messages:
 
 ```bash
-build/src/task1_float16_v0 -h
+# Run the binary but showing help messages only
+./build/src/task1_float16_v0 -h
 ```
 
 ## 3. Add Your Own Implementation
 
 Create a `.cu` file under directory "[./task-1/src](./src)" with any name you like, and implement a matmul function with macro `PLAYGROUND_MATMUL_DEC`.
 
-For example, add following lines in "./task-1/src/xxx/xxx/f16-v2.cu" to provide the definition for function `matmul<float16_t, 2>`:
+For example, add the following lines in "./task-1/src/xxx/xxx/f16-v2.cu" to provide the definition for function `matmul<float16_t, 2>`:
 
 ```cpp
 // @file: ./task-1/src/xxx/xxx/f16-v2.cu
@@ -59,30 +60,34 @@ PLAYGROUND_MATMUL_DEC(float16_t, 2, A, B, C, M, N, K)
 ```
 
 > 💡**Note**:  
-> Do not use version 0 and 1 because they are for cblas and cublas respectively.
+> Do not use version `0` and `1` because they are for cblas and cublas respectively.
 
-Now you can build an new executable to test your implementation with the following command:
+Now you are able to build a new binary `task1_float16_v2` to with the following command:
 
 ```bash
 # Build the test binary with DType=float16 and Version=2:
-bash scripts/build.sh -v2 -f16
+bash ./scripts/build.sh -v2 -f16
+# Run the test binary
+./build/src/task1_float16_v2
 ```
 
 ## 4. Profile Your Kernel with Nsight Compute
 
-Use "[scripts/nsight-profile.sh](../scripts/nsight-profile.sh)" to profile an executable which contains **a self-defined cuda kernel**.
+Use "[scripts/nsight-profile.sh](../scripts/nsight-profile.sh)" to profile an binary which contains **a self-defined cuda kernel**.
 
-⚠️ **The profiled executable must be built with `RelWithDebInfo` or `RD` flag**:
+⚠️ **The profiled binary must be built with `RelWithDebInfo` or `RD` flag**. 
+
+For example, to build matmul kernel with `DType=float16`, `Version=2` and `RD` flag:
 
 ```bash
 # `RD` is the same as `RelWithDebInfo`
-bash scripts/build-task1.sh RD -f16 -v2 
+bash ./scripts/build-task1.sh RD -f16 -v2 
 ```
 
-Then you can profile the executable with `ncu`:
+Then you can profile the binary with `ncu` with a tool script:
 
 ```bash
-bash scripts/nsight-profile.sh -t build/src/task1_float16_v2
+bash ./scripts/nsight-profile.sh -t build/src/task1_float16_v2
 ```
 
 A `.ncu-rep` file will be generated in the current directory. Download it to your local machine and open it with Nsight Compute GUI.
