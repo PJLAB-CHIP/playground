@@ -18,7 +18,6 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          # You should add a Personal Access Token (PAT) to the repository secrets
           token: ${{ secrets.PAT || github.token }}
 
       - name: Set up Python

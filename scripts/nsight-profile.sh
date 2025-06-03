@@ -1,4 +1,4 @@
-TEST_FILE="./build/test/pmpp_test"
+TEST_FILE=""
 OUTPUT_FILE="./nsight_profile.ncu-rep"
 
 while [[ $# -gt 0 ]]; do
