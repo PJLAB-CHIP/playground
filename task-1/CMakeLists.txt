@@ -8,7 +8,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/utils/common.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set_default_values(
-    PROJECT_NAMESPACE "pmpp::"
+    PROJECT_NAMESPACE "playground::"
     STDOUT_IS_TERMINAL OFF
     CMAKE_EXECUTABLE_SUFFIX ""
 )

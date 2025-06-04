@@ -20,7 +20,7 @@ public:
     cublasHandle_t handle = {};
 };
 
-[[nodiscard("Cublas handle is not used")]]
+[[nodiscard]]
 inline auto s_getCublasHandle() -> cublasHandle_t&
 {
     static CuBLASHandle handle;

@@ -1,6 +1,7 @@
 {
     "recommendations": [
-        "llvm-vs-code-extensions.vscode-clangd",  // clangd
-        "twxs.cmake"  // cmake
+        "llvm-vs-code-extensions.vscode-clangd",
+        "twxs.cmake",
+        "josetr.cmake-language-support-vscode"
     ]
 }

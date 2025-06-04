@@ -1,7 +1,3 @@
-Index:
-  Background: Build
-  StandardLibrary: Yes
-
 Diagnostics:
   UnusedIncludes: None
   MissingIncludes: None
@@ -49,4 +45,4 @@ If:
   PathMatch: [.*\.cu, .*\.cuh]
 CompileFlags:
   Add: 
-    - --cuda-gpu-arch=sm_89
+    - --cuda-gpu-arch=sm_80

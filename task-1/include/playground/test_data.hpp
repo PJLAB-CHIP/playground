@@ -68,7 +68,6 @@ public:
     }
 
     [[nodiscard]]
-
     explicit operator bool() const
     {
         return ptr != nullptr;
@@ -143,6 +142,7 @@ public:
         std::ranges::generate(_B, [&]() { return distrib(gen); });
     }
 
+    [[nodiscard]]
     auto calculateAvgErr() -> float32_t
     {
         float32_t gap = 0.0;

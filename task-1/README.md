@@ -26,7 +26,11 @@ bash scripts/build-task1.sh -f16 -v1
 For more compile options, see "[./scripts/build-task1.sh](../scripts/build-task1.sh)".
 
 > 💡**Note**:  
-> It is suggested to restart clangd server after building (to avoid some code analysis errors).  
+> 1. Please install the following extensions in VSCode:
+>    - llvm-vs-code-extensions.vscode-clangd
+>    - twxs.cmake
+>    - josetr.cmake-language-support-vscode
+> 2. It is suggested to restart clangd server after building (to avoid some code analysis errors).  
 > To restart clangd server, press `Ctrl+Shift+P` in VSCode, and select `clangd: Restart language server`.  
 > ![restart-clangd](../docs/imgs/restart-clangd.png)
 
