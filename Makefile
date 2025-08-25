@@ -12,7 +12,7 @@ else
 endif
 
 # 构建目录和二进制文件路径
-BUILD_DIR = ./build
+BUILD_DIR = ./build/src
 BINARY_NAME = task1_$(FLOAT_TYPE)_v$(VER)
 BINARY_PATH = $(BUILD_DIR)/$(BINARY_NAME)
 LOGS_DIR = logs
@@ -27,7 +27,7 @@ all: help
 # 1) 编译构建指定 FLOAT 类型和 VERSION 的代码
 build:
 	@echo "=== Building with FLOAT=$(FLOAT) VERSION=$(VER) ==="
-	./scripts/build-task1.sh $(FLOAT_FLAG) -v$(VER)
+	bash scripts/build-task1.sh $(FLOAT_FLAG) -v$(VER)
 
 # 2) 运行指定 FLOAT 类型和 VERSION 的代码
 run: build
@@ -45,13 +45,13 @@ run: build
 # 3) 编译构建带有完整符号的代码 (RelWithDebInfo)
 debug:
 	@echo "=== Building Debug version with FLOAT=$(FLOAT) VERSION=$(VER) ==="
-	./scripts/build-task1.sh $(FLOAT_FLAG) -v$(VER) RD
+	bash scripts/build-task1.sh $(FLOAT_FLAG) -v$(VER) RD
 
 # 4) 用 nsight compute 导出性能分析报告
-profile: build
+profile: debug
 	@echo "=== Profiling $(BINARY_NAME) with Nsight Compute ==="
 	@mkdir -p $(LOGS_DIR)/profiles
-	./scripts/nsight-profile.sh -t $(BINARY_PATH) -o $(LOGS_DIR)/profiles/$(BINARY_NAME)_$(TIMESTAMP).ncu-rep
+	bash scripts/nsight-profile.sh -t $(BINARY_PATH) -o $(LOGS_DIR)/profiles/$(BINARY_NAME)_$(TIMESTAMP).ncu-rep
 	@echo "Profile saved to: $(LOGS_DIR)/profiles/$(BINARY_NAME)_$(TIMESTAMP).ncu-rep"
 
 # 清理构建文件
