@@ -8,7 +8,7 @@ First, fork this repository to your own github account:
 
 ![image](./docs/imgs/fork.png)
 
-Create a docker container from image `pjlab/deeplearning:v2.0.6-torch2.7.0-cuda12.6.0-ubuntu24.04`, for example:
+Create a docker container from image `pjlab/deeplearning:v2.2.3-cuda12.8.0-torch2.7.0`, for example:
 
 ```bash
 # Params:
@@ -25,7 +25,7 @@ docker run --gpus all --name <container-name> -it \
     -e HTTPS_PROXY=<proxy-addr>  \
     -e http_proxy=<proxy-addr>  \
     -e https_proxy=<proxy-addr>  \
-    pjlab/deeplearning:v2.1.0-torch2.7.0-cuda12.6.0-ubuntu24.04
+    pjlab/deeplearning:v2.2.3-cuda12.8.0-torch2.7.0
 ```
 
 Inside the container, clone the repo you forked:
