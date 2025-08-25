@@ -35,3 +35,6 @@
 build
 
 **/*.ncu-rep
+
+# VS Code workspace files
+.vscode
