@@ -38,3 +38,9 @@ build
 
 # VS Code workspace files
 .vscode
+
+# Logs
+logs
+
+# Cache files
+.cache
