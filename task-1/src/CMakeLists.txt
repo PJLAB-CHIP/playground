@@ -14,17 +14,14 @@ endif()
 set(CXX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 set(CUDA_SOURCES "")
 
-# Find version-specific files in the data type directory
-file(GLOB VERSION_CXX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_TYPE_DIR}/*_v${MATMUL_VERSION}_*.cpp")
-file(GLOB VERSION_CUDA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_TYPE_DIR}/*_v${MATMUL_VERSION}_*.cu")
-
-# Also include files with exact version pattern (e.g., v0, v1)
-file(GLOB VERSION_CXX_FILES_ALT "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_TYPE_DIR}/*_v${MATMUL_VERSION}.cpp")
-file(GLOB VERSION_CUDA_FILES_ALT "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_TYPE_DIR}/*_v${MATMUL_VERSION}.cu")
+# Include ALL version files for the specified data type
+# This is necessary because the main function may call different versions
+file(GLOB VERSION_CXX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_TYPE_DIR}/*.cpp")
+file(GLOB VERSION_CUDA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_TYPE_DIR}/*.cu")
 
 # Combine all version-specific files
-list(APPEND CXX_SOURCES ${VERSION_CXX_FILES} ${VERSION_CXX_FILES_ALT})
-list(APPEND CUDA_SOURCES ${VERSION_CUDA_FILES} ${VERSION_CUDA_FILES_ALT})
+list(APPEND CXX_SOURCES ${VERSION_CXX_FILES})
+list(APPEND CUDA_SOURCES ${VERSION_CUDA_FILES})
 
 # Log included files for debugging
 log_info("Including source files for ${TEST_DATA_TYPE} version ${MATMUL_VERSION}:")
