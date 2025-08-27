@@ -8,31 +8,31 @@ Implement a high performance gemm (General Matrix Multiply) function with CUDA o
 
 The implementation should be able to achieve at least **90%** of the performance of cuBLAS, with the given benchmarking structure.
 
-## 2. Quick Start with Makefile
+## 2. Quick Start with Bash Script
 
-We provide a convenient Makefile that offers 4 main operations:
+We provide a convenient bash script `task1.sh` that offers the same operations as the previous Makefile:
 
 ```bash
 # Show all available commands
-make help
+./task1.sh help
 
 # 1) Build code with specified FLOAT type and VERSION
-make build FLOAT=f32 VER=1
+./task1.sh build --float f32 --ver 1
 
 # 2) Build and run code, automatically save logs
-make run FLOAT=f16 VER=1
+./task1.sh run --float f16 --ver 1
 
 # 3) Build with debug symbols (RelWithDebInfo)
-make debug FLOAT=f32 VER=2
+./task1.sh debug --float f32 --ver 2
 
 # 4) Profile with nsight compute, save reports
-make profile FLOAT=f16 VER=2
+./task1.sh profile --float f16 --ver 2
 
 # Clean build files
-make clean
+./task1.sh clean
 
 # Clean log files  
-make clean-logs
+./task1.sh clean-logs
 ```
 
 ### Key Features:
@@ -57,19 +57,19 @@ bash scripts/build-task1.sh -f32 -v1
 bash scripts/build-task1.sh -f16 -v1
 ```
 
-### Using Makefile (Recommended):
+### Using task1.sh script (Recommended):
 ```bash
 # Build gemm implemented with CBLAS (CPU) under float32:
-make build FLOAT=f32 VER=0
+./task1.sh build --float f32 --ver 0
 # Build gemm implemented with CBLAS (CPU) under float16:
-make build FLOAT=f16 VER=0
+./task1.sh build --float f16 --ver 0
 # Build gemm implemented with cublas (CUDA) under float32:
-make build FLOAT=f32 VER=1
+./task1.sh build --float f32 --ver 1
 # Build gemm implemented with cublas (CUDA) under float16:
-make build FLOAT=f16 VER=1
+./task1.sh build --float f16 --ver 1
 ```
 
-For more compile options, see "[./scripts/build-task1.sh](../scripts/build-task1.sh)" or run `make help`.
+For more compile options, see "[./scripts/build-task1.sh](../scripts/build-task1.sh)" or run `./task1.sh help`.
 
 > 💡**Note**:  
 > 1. Please install the following extensions in VSCode:
@@ -90,14 +90,14 @@ You can set `m`, `n`, `k`, `n_warmup` and `n_test` by passing arguments to binar
 ./build/src/task1_float16_v0 -h
 ```
 
-### Running with Makefile (Recommended):
+### Running with task1.sh script (Recommended):
 ```bash
 # Build and run with automatic logging
-make run FLOAT=f16 VER=0
+./task1.sh run --float f16 --ver 0
 
 # Run with different configurations
-make run FLOAT=f32 VER=1
-make run FLOAT=f16 VER=1
+./task1.sh run --float f32 --ver 1
+./task1.sh run --float f16 --ver 1
 ```
 
 The run results will be automatically saved to `logs/` directory with timestamp and version information.
@@ -135,10 +135,10 @@ bash ./scripts/build-task1.sh -v2 -f16
 ./build/src/task1_float16_v2
 ```
 
-### Using Makefile (Recommended):
+### Using task1.sh script (Recommended):
 ```bash
 # Build and run with automatic logging
-make run FLOAT=f16 VER=2
+./task1.sh run --float f16 --ver 2
 ```
 
 ## 4. Profile Your Kernel with Nsight Compute
@@ -161,10 +161,10 @@ Then you can profile the binary with `ncu` with a tool script:
 bash ./scripts/nsight-profile.sh -t build/src/task1_float16_v2
 ```
 
-### Using Makefile (Recommended):
+### Using task1.sh script (Recommended):
 ```bash
 # Build with debug symbols and profile automatically
-make profile FLOAT=f16 VER=2
+./task1.sh profile --float f16 --ver 2
 ```
 
 A `.ncu-rep` file will be generated in the `logs/profiles/` directory with timestamp. Download it to your local machine and open it with Nsight Compute GUI.
