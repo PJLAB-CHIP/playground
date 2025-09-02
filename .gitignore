@@ -35,3 +35,12 @@
 build
 
 **/*.ncu-rep
+
+# VS Code workspace files
+.vscode
+
+# Logs
+logs
+
+# Cache files
+.cache

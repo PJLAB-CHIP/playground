@@ -8,10 +8,44 @@ Implement a high performance gemm (General Matrix Multiply) function with CUDA o
 
 The implementation should be able to achieve at least **90%** of the performance of cuBLAS, with the given benchmarking structure.
 
-## 2. Benchmark cBlas and cuBlas
+## 2. Quick Start with Bash Script
+
+We provide a convenient bash script `task1.sh` that offers the same operations as the previous Makefile:
+
+```bash
+# Show all available commands
+./task1.sh help
+
+# 1) Build code with specified FLOAT type and VERSION
+./task1.sh build --float f32 --ver 1
+
+# 2) Build and run code, automatically save logs
+./task1.sh run --float f16 --ver 1
+
+# 3) Build with debug symbols (RelWithDebInfo)
+./task1.sh debug --float f32 --ver 2
+
+# 4) Profile with nsight compute, save reports
+./task1.sh profile --float f16 --ver 2
+
+# Clean build files
+./task1.sh clean
+
+# Clean log files  
+./task1.sh clean-logs
+```
+
+### Key Features:
+- **Automatic Logging**: Run results are saved to `logs/` directory with timestamp and version info
+- **TFLOPS and Error Tracking**: Captures performance metrics and error rates automatically
+- **Nsight Compute Integration**: Profile reports saved to `logs/profiles/` with timestamp
+- **Version-Specific File Inclusion**: Only includes source files for the current version to avoid conflicts
+
+## 3. Benchmark cBlas and cuBlas
 
 Build example matmul with the following commands (`v0 -> cblas`; `v1 -> cublas`):
 
+### Using build script directly:
 ```bash
 # Build gemm implemented with CBLAS (CPU) under float32:
 bash scripts/build-task1.sh -f32 -v0
@@ -23,7 +57,19 @@ bash scripts/build-task1.sh -f32 -v1
 bash scripts/build-task1.sh -f16 -v1
 ```
 
-For more compile options, see "[./scripts/build-task1.sh](../scripts/build-task1.sh)".
+### Using task1.sh script (Recommended):
+```bash
+# Build gemm implemented with CBLAS (CPU) under float32:
+./task1.sh build --float f32 --ver 0
+# Build gemm implemented with CBLAS (CPU) under float16:
+./task1.sh build --float f16 --ver 0
+# Build gemm implemented with cublas (CUDA) under float32:
+./task1.sh build --float f32 --ver 1
+# Build gemm implemented with cublas (CUDA) under float16:
+./task1.sh build --float f16 --ver 1
+```
+
+For more compile options, see "[./scripts/build-task1.sh](../scripts/build-task1.sh)" or run `./task1.sh help`.
 
 > 💡**Note**:  
 > 1. Please install the following extensions in VSCode:
@@ -36,12 +82,25 @@ For more compile options, see "[./scripts/build-task1.sh](../scripts/build-task1
 
 Run the binarys in "[./build/src](../build/src)" directory to get the benchmark results.
 
+### Running directly:
 You can set `m`, `n`, `k`, `n_warmup` and `n_test` by passing arguments to binarys built in this task. Use `-h` to print help messages:
 
 ```bash
 # Run the binary but showing help messages only
 ./build/src/task1_float16_v0 -h
 ```
+
+### Running with task1.sh script (Recommended):
+```bash
+# Build and run with automatic logging
+./task1.sh run --float f16 --ver 0
+
+# Run with different configurations
+./task1.sh run --float f32 --ver 1
+./task1.sh run --float f16 --ver 1
+```
+
+The run results will be automatically saved to `logs/` directory with timestamp and version information.
 
 ## 3. Add Your Own Implementation
 
@@ -68,11 +127,18 @@ PLAYGROUND_MATMUL_DEC(float16_t, 2, A, B, C, M, N, K)
 
 Now you are able to build a new binary `task1_float16_v2` to with the following command:
 
+### Using build script directly:
 ```bash
 # Build the test binary with DType=float16 and Version=2:
-bash ./scripts/build.sh -v2 -f16
+bash ./scripts/build-task1.sh -v2 -f16
 # Run the test binary
 ./build/src/task1_float16_v2
+```
+
+### Using task1.sh script (Recommended):
+```bash
+# Build and run with automatic logging
+./task1.sh run --float f16 --ver 2
 ```
 
 ## 4. Profile Your Kernel with Nsight Compute
@@ -81,6 +147,7 @@ Use "[scripts/nsight-profile.sh](../scripts/nsight-profile.sh)" to profile an bi
 
 ⚠️ **The profiled binary must be built with `RelWithDebInfo` or `RD` flag**. 
 
+### Using build script directly:
 For example, to build matmul kernel with `DType=float16`, `Version=2` and `RD` flag:
 
 ```bash
@@ -94,7 +161,13 @@ Then you can profile the binary with `ncu` with a tool script:
 bash ./scripts/nsight-profile.sh -t build/src/task1_float16_v2
 ```
 
-A `.ncu-rep` file will be generated in the current directory. Download it to your local machine and open it with Nsight Compute GUI.
+### Using task1.sh script (Recommended):
+```bash
+# Build with debug symbols and profile automatically
+./task1.sh profile --float f16 --ver 2
+```
+
+A `.ncu-rep` file will be generated in the `logs/profiles/` directory with timestamp. Download it to your local machine and open it with Nsight Compute GUI.
 
 ![ncu-example](../docs/imgs/ncu-example.png)
 

@@ -1,7 +1,37 @@
 # Set the Target Name and Add Executable
 set(TARGET_NAME task1)
-file(GLOB_RECURSE CXX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-file(GLOB_RECURSE CUDA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cu)
+
+# Determine source files based on data type and version
+if(TEST_DATA_TYPE STREQUAL "float32")
+    set(DATA_TYPE_DIR "matmul_f32")
+elseif(TEST_DATA_TYPE STREQUAL "float16")
+    set(DATA_TYPE_DIR "matmul_f16")
+else()
+    message(FATAL_ERROR "Unsupported TEST_DATA_TYPE: ${TEST_DATA_TYPE}")
+endif()
+
+# Always include main.cpp
+set(CXX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+set(CUDA_SOURCES "")
+
+# Include ALL version files for the specified data type
+# This is necessary because the main function may call different versions
+file(GLOB VERSION_CXX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_TYPE_DIR}/*.cpp")
+file(GLOB VERSION_CUDA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${DATA_TYPE_DIR}/*.cu")
+
+# Combine all version-specific files
+list(APPEND CXX_SOURCES ${VERSION_CXX_FILES})
+list(APPEND CUDA_SOURCES ${VERSION_CUDA_FILES})
+
+# Log included files for debugging
+log_info("Including source files for ${TEST_DATA_TYPE} version ${MATMUL_VERSION}:")
+foreach(source ${CXX_SOURCES})
+    log_info("  CXX: ${source}")
+endforeach()
+foreach(source ${CUDA_SOURCES})
+    log_info("  CUDA: ${source}")
+endforeach()
+
 add_executable(${TARGET_NAME} ${CXX_SOURCES} ${CUDA_SOURCES})
 
 # [NOTE] Uncomment this to generate preprocessed file and assembly file
